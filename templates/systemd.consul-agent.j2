@@ -1,0 +1,14 @@
+[Unit]
+Description=Distributed Service Discovery Service
+After=network.target
+
+[Service]
+User={{ consul_user }}
+Group={{ consul_group }}
+ExecStart={{ consul_bin_dir }}/consul agent -config-dir {{ consul_config_dir }} -config-file={{ consul_config_file }} -syslog
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

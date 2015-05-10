@@ -1,0 +1,15 @@
+---
+- include: centos/prepare.yml
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+- include: common.yml
+# TODO: this needs to go into centos/postinstall once https://github.com/ansible/ansible/issues/10907 is fixed
+- name: install systemd consul-agent.service
+  template:
+    src: systemd.consul-agent.j2
+    dest: '{{ consul_config_dir }}/consul-agent.service'
+    owner: root
+    group: root
+    mode: 644
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+- include: centos/postinstall.yml
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'

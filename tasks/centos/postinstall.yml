@@ -1,0 +1,9 @@
+- command: systemctl enable '{{ consul_config_dir }}/consul-agent.service'
+- service:
+     name: consul-agent
+     enabled: yes
+     state: started
+
+- command: pidof {{ consul_bin_dir }}/consul
+  register: consul_pid
+  failed_when: consul_pid.stdout == ''

@@ -1,0 +1,4 @@
+---
+- yum: state=latest pkg={{ item }}
+  with_flattened:
+     - unzip

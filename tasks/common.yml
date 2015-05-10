@@ -1,0 +1,39 @@
+- group: name={{ consul_group  }} state=present
+- user:  name={{ consul_user }} group={{ consul_group }} state=present
+- name: create consul directory
+  file:  state=directory path={{ item }} owner={{ consul_user }} group={{ consul_group }}
+  with_items:
+    - '{{ consul_home }}'
+    - '{{ consul_home }}/tmp'
+    - '{{ consul_home }}/bin'
+    - '{{ consul_data_dir }}'
+    - '{{ consul_config_dir }}'
+
+- name: cache consul binary
+  local_action: get_url url='{{ consul_url_prefix }}/{{ consul_version }}_linux_amd64.zip' dest="{{ lookup('env','HOME') }}/tmp/ansible-cache/" sha256sum=161f2a8803e31550bd92a00e95a3a517aa949714c19d3124c46e56cfdc97b088 force=no
+
+- unarchive:
+    copy: yes
+    src: "{{ lookup('env','HOME') }}/tmp/ansible-cache/{{ consul_version }}_linux_amd64.zip"
+    dest: '{{ consul_bin_dir }}'
+    creates: '{{ consul_bin_dir }}/consul'
+
+- name: profile hook, to publish consul_home variable
+  template:
+     src: profile_d.consul.sh.j2
+     dest: /etc/profile.d/consul.sh
+     owner: root
+     group: root
+     mode: 0755
+
+- name: validate consul is operational
+  command: "{{ consul_bin_dir }}/consul --version |grep -q 'Consul v{{ consul_version }}'"
+  changed_when: false
+
+- name: consul configuration file
+  template:
+    src: consul.conf.j2
+    dest: '{{ consul_config_file }}'
+    owner: consul
+    group: root
+    mode: 0644
